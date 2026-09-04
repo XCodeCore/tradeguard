@@ -38,3 +38,9 @@ At a common 1,000 USDT size, observable depth was sufficient for both sides on a
 - No REST fallback or order-execution tool.
 - Fixtures are Vitest-only.
 - No OAuth or account secrets stored.
+
+## Milestone 3B independent application integration
+
+TradeGuard uses the Agent OS authorization server at `https://agent.binance.com`, the Agent OS authorization-code endpoint, S256 PKCE, and the URL-based client metadata document supported by Binance metadata. It does not use generic Binance Login OAuth, dynamic registration, a client secret, or an invented scope identifier.
+
+Production credentials are durable but server-only: the application stores one-time OAuth transactions and AES-256-GCM-encrypted token payloads in Upstash Redis. The browser holds only an opaque secure session identifier. The official `@modelcontextprotocol/client` Streamable HTTP transport connects to `https://agent.binance.com/mcp/agentic`; the adapter invokes `spot_exchangeInfo`, `spot_tickerPrice`, `spot_klines`, and `spot_depth` as needed. Live production validation must be recorded here only after the deployed metadata, consent flow, and assessment endpoint succeed; implementation alone is not evidence of a successful live assessment.

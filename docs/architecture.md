@@ -1,4 +1,14 @@
-# TradeGuard Milestone 2 architecture
+# TradeGuard architecture
+
+## Production authorization and assessment path
+
+`Browser → TradeGuard OAuth routes → Binance Agent OS OAuth → encrypted Upstash Redis session → MCP Streamable HTTP → MarketSnapshot → risk engine → Assessment`
+
+The public client identifier is `https://tradeguard-rust.vercel.app/oauth/client-metadata.json`; it declares a public authorization-code client with S256 PKCE and no client secret. OAuth transactions are random, single-use Redis records with a 10-minute TTL. The callback atomically consumes the transaction before exchanging the code.
+
+The browser receives only a 256-bit opaque session ID in an `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/` cookie. OAuth token payloads are encrypted with AES-256-GCM, bound to that session ID as authenticated additional data, and stored only in Redis. A refresh token is neither assumed nor requested; if Binance returns one, the session may use the standard refresh grant. Otherwise expiry deletes the session and requires reconnection.
+
+`POST /api/assess` verifies same-origin browser submission, resolves the server-side token, creates an official MCP Streamable HTTP client, and invokes the dependency-injected adapter. It has no Binance REST or fixture fallback. The response separates provenance, compact normalized market measurements, and the deterministic assessment.
 
 ## Data flow
 

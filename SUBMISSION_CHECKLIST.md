@@ -13,8 +13,12 @@
 - [x] Four-pair live threshold calibration
 - [x] Normalized scoring, deterministic safer amount, failure statuses
 - [x] Required automated coverage
-- [ ] Polished dashboard — deferred pending approval
-- [ ] Production deployment — out of scope
+- [x] Polished responsive dashboard shell
+- [x] Public Agent OS OAuth client metadata and S256 PKCE flow
+- [x] Encrypted durable Redis session architecture
+- [x] Official MCP Streamable HTTP client wired to normalized adapter
+- [ ] Deployed OAuth consent flow validated
+- [ ] Live production BTCUSDT and ETHUSDT assessment validated
 - [ ] Real order execution — prohibited
 
 ## Security
