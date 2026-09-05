@@ -1,14 +1,16 @@
 # TradeGuard architecture
 
-## Production authorization and assessment path
+## Supported Agent OS path
 
-`Browser → TradeGuard OAuth routes → Binance Agent OS OAuth → encrypted Upstash Redis session → MCP Streamable HTTP → MarketSnapshot → risk engine → Assessment`
+`User → TradeGuard workflow in Codex → Binance Agent OS MCP → captured public responses → MarketSnapshot → risk engine → Assessment`
 
-The public client identifier is `https://tradeguard-rust.vercel.app/oauth/client-metadata.json`; it declares a public authorization-code client with S256 PKCE and no client secret. OAuth transactions are random, single-use Redis records with a 10-minute TTL. The callback atomically consumes the transaction before exchanging the code.
+Codex is the supported authenticated host. The repository-scoped `tradeguard-assess` skill calls only `spot_exchangeInfo`, `spot_tickerPrice`, `spot_klines`, and progressively sized `spot_depth`. Public responses are kept in an ephemeral `/tmp` capture and passed to `scripts/run-tradeguard-assessment.mjs`; the helper invokes the existing adapter and risk engine rather than reproducing calculations in prose.
 
-The browser receives only a 256-bit opaque session ID in an `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/` cookie. OAuth token payloads are encrypted with AES-256-GCM, bound to that session ID as authenticated additional data, and stored only in Redis. A refresh token is neither assumed nor requested; if Binance returns one, the session may use the standard refresh grant. Otherwise expiry deletes the session and requires reconnection.
+The dashboard is a presentation and session-history layer. It accepts a manually pasted `tradeguard.assessment.v1` envelope containing only completed assessment data—never OAuth tokens or MCP credentials. The import parser requires all four tool-provenance entries, exactly 60 five-minute candles, valid normalized market fields, a deterministic risk verdict, and a retrieval time no older than 15 minutes. Imported data is labeled `IMPORTED MCP`, not independently claimed as a direct live connection.
 
-`POST /api/assess` verifies same-origin browser submission, resolves the server-side token, creates an official MCP Streamable HTTP client, and invokes the dependency-injected adapter. It has no Binance REST or fixture fallback. The response separates provenance, compact normalized market measurements, and the deterministic assessment.
+## Unsupported custom-web experiment
+
+The standards-based web OAuth prototype reached Binance Agentic authorization with a valid URL client metadata document. Binance then rejected TradeGuard with: “The AI Agent you are using is not currently supported. Please connect using a supported Agent to continue.” The implementation remains in Git history at `ad32a54`; it is removed from the active application. TradeGuard does not spoof a supported client or reuse its credentials.
 
 ## Data flow
 

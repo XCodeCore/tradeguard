@@ -1,0 +1,4 @@
+interface:
+  display_name: "TradeGuard Assessment"
+  short_description: "Assess a proposed Spot trade with live Binance Agent OS data"
+  default_prompt: "Assess this proposed Binance Spot trade with TradeGuard using live Agent OS market data."

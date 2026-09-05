@@ -14,11 +14,12 @@
 - [x] Normalized scoring, deterministic safer amount, failure statuses
 - [x] Required automated coverage
 - [x] Polished responsive dashboard shell
-- [x] Public Agent OS OAuth client metadata and S256 PKCE flow
-- [x] Encrypted durable Redis session architecture
-- [x] Official MCP Streamable HTTP client wired to normalized adapter
-- [ ] Deployed OAuth consent flow validated
-- [ ] Live production BTCUSDT and ETHUSDT assessment validated
+- [x] Custom-web OAuth experiment documented and removed from active UX
+- [x] Codex-hosted Agent OS assessment skill
+- [x] Deterministic captured-response orchestration
+- [x] Fresh assessment-envelope dashboard import bridge
+- [ ] Record final live LQTYUSDT risky/safer demo sequence
+- [ ] Record final live BTCUSDT comparison
 - [ ] Real order execution — prohibited
 
 ## Security
