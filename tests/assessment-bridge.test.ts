@@ -35,4 +35,27 @@ describe("Codex-hosted assessment orchestration", () => {
     const incomplete = { ...result, provenance: { ...result.provenance, toolsInvoked: result.provenance.toolsInvoked.filter((tool) => tool.name !== "spot_depth") } };
     expect(() => parseAssessmentEnvelope(JSON.stringify(incomplete), NOW)).toThrow(/incomplete/);
   });
+
+  it("accepts REDUCE_SIZE when a market override remains and no smaller amount was calculated", async () => {
+    const result = await assessCapturedMarket(captured());
+    if (!("provenance" in result)) throw new Error("Expected assessment envelope.");
+    const marketDrivenReassessment = {
+      ...result,
+      request: { ...result.request, proposedNotional: 331.96 },
+      assessment: {
+        ...result.assessment,
+        status: "REDUCE_SIZE",
+        score: 18.75,
+        saferAmount: 331.96,
+        reason: "Deterministic score 18.75; override applied: observable liquidity depth reached the severe-risk band.",
+        overrides: { minimumStatus: "REDUCE_SIZE", reasons: ["observable liquidity depth reached the severe-risk band"] },
+      },
+    };
+
+    expect(parseAssessmentEnvelope(JSON.stringify(marketDrivenReassessment), NOW)).toMatchObject({
+      request: { proposedNotional: 331.96 },
+      assessment: { status: "REDUCE_SIZE", score: 18.75, saferAmount: 331.96, overrides: { minimumStatus: "REDUCE_SIZE" } },
+    });
+    expect(() => parseAssessmentEnvelope(JSON.stringify(marketDrivenReassessment), NOW + 16 * 60_000)).toThrow("Agent OS provenance is stale.");
+  });
 });

@@ -8,7 +8,9 @@ export function parseAssessmentEnvelope(text: string, now = Date.now()): Assessm
   if (!record(value) || value.schemaVersion !== ASSESSMENT_SCHEMA_VERSION || value.generatedBy !== "CODEX_HOSTED_TRADEGUARD") throw new Error("This is not a supported TradeGuard assessment envelope.");
   const request = value.request, provenance = value.provenance, market = value.market, assessment = value.assessment;
   if (!record(request) || typeof request.symbol !== "string" || !/^[A-Z0-9]{5,20}$/.test(request.symbol) || (request.side !== "BUY" && request.side !== "SELL") || !finite(request.proposedNotional) || request.proposedNotional <= 0) throw new Error("Assessment request fields are invalid.");
-  if (!record(provenance) || provenance.source !== "BINANCE_AGENT_OS_MCP" || !finite(provenance.retrievedAt) || provenance.retrievedAt > now + 5_000 || now - provenance.retrievedAt > 15 * 60_000 || !finite(provenance.orderBookDepthUsed) || provenance.candleInterval !== "5m" || provenance.candleCount !== 60 || !Array.isArray(provenance.toolsInvoked)) throw new Error("Agent OS provenance is invalid or stale.");
+  if (!record(provenance) || provenance.source !== "BINANCE_AGENT_OS_MCP" || !finite(provenance.retrievedAt) || !finite(provenance.orderBookDepthUsed) || provenance.candleInterval !== "5m" || provenance.candleCount !== 60 || !Array.isArray(provenance.toolsInvoked)) throw new Error("Agent OS provenance is invalid.");
+  if (provenance.retrievedAt > now + 5_000) throw new Error("Agent OS provenance timestamp is in the future.");
+  if (now - provenance.retrievedAt > 15 * 60_000) throw new Error("Agent OS provenance is stale.");
   const toolNames = new Set(provenance.toolsInvoked.filter(record).map((tool) => tool.name));
   if (REQUIRED_TOOLS.some((name) => !toolNames.has(name))) throw new Error("Required Agent OS tool provenance is incomplete.");
   if (!record(market) || !finite(market.tickerPrice) || !finite(market.bestBid) || !finite(market.bestAsk) || market.bestBid >= market.bestAsk) throw new Error("Normalized market summary is invalid.");
